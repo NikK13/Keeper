@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:keeper/domain/utils/styles.dart';
@@ -10,11 +11,14 @@ class InputField extends StatelessWidget {
   final String? title;
   final String? hint;
   final Widget? prefixIcon;
+  final Widget? suffixIcon;
   final TextEditingController? controller;
   final Function? onTap;
   final Function? onMapTap;
+  final Function? onChanged;
   final bool? isDatePick;
   final bool isMapOpenable;
+  final bool showClearBtn;
   final double borderRadius;
   final TextInputType inputType;
   final TextInputType numberInputType;
@@ -27,6 +31,9 @@ class InputField extends StatelessWidget {
     this.onTap,
     this.prefixIcon,
     this.onMapTap,
+    this.onChanged,
+    this.suffixIcon,
+    this.showClearBtn = false,
     this.isMapOpenable = false,
     this.numberInputType = numberTypeForInputs,
     this.inputType = numberTypeForInputs,
@@ -62,6 +69,8 @@ class InputField extends StatelessWidget {
               ? FilteringTextInputFormatter.allow(RegExp("[0-9.,]"))
               : FilteringTextInputFormatter.deny('')
             ],
+            onChanged: onChanged != null ?
+            (String value) => onChanged!(value) : null,
             decoration: InputDecoration(
               filled: true,
               fillColor: secondaryColor(context),
@@ -73,7 +82,7 @@ class InputField extends StatelessWidget {
                   color: Colors.grey.withOpacity(0.75),
                   size: 24,
                 )
-              ) : null,
+              ) : suffixIcon,
               prefixIcon: prefixIcon,
               border: inputBorder(context),
               enabledBorder: inputBorder(context),

@@ -1,6 +1,14 @@
 // ignore_for_file: use_build_context_synchronously
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:keeper/domain/utils/styles.dart';
+import 'package:intl/intl.dart';
+import 'package:keeper/data/navigator/nested/nested_delegate.dart';
+import 'package:keeper/data/navigator/nested/nested_parser.dart';
+import 'package:keeper/data/navigator/routes.dart';
+import 'package:keeper/domain/model/note.dart';
+import 'package:keeper/domain/utils/constants.dart';
+import 'package:keeper/domain/utils/extensions.dart';
+import 'package:keeper/presenter/bloc/db_bloc.dart';
 import 'package:keeper/presenter/bloc/home_bloc.dart';
 import 'package:keeper/presenter/ui/onboard.dart';
 import 'package:keeper/presenter/widgets/general/app_page.dart';
@@ -8,29 +16,59 @@ import 'package:provider/provider.dart';
 
 import '../../domain/utils/localization.dart';
 import '../provider/provider.dart';
+import '../widgets/general/drawer.dart';
 import '../widgets/general/extended_fab.dart';
 import '../widgets/general/input.dart';
 
 class HomePage extends StatefulWidget {
-  final HomePageBloc? homePageBloC;
-
-  const HomePage({this.homePageBloC, super.key});
+  const HomePage({super.key});
 
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
+  late HomePageBloc _homePageBloC;
+  late DatabaseBloc _databaseBloc;
+
+  late NestedRouterDelegate _nestedDelegate;
+  late NestedRouterParser _nestedParser;
+  late ChildBackButtonDispatcher _backButtonDispatcher;
+
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
+  final _searchController = TextEditingController();
+
+  void Function(void Function())? _setSearchState;
+
+  @override
+  void initState() {
+    _homePageBloC = HomePageBloc();
+    _databaseBloc = DatabaseBloc();
+    _nestedParser = NestedRouterParser();
+    _nestedDelegate = NestedRouterDelegate(
+      _homePageBloC, _databaseBloc
+    );
+    super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _backButtonDispatcher = Router.of(context)
+    .backButtonDispatcher!.createChildBackButtonDispatcher();
+  }
+
   @override
   Widget build(BuildContext context) {
     //debugPrint("HOME BUILD");
     final provider = Provider.of<PreferenceProvider>(context);
     return !provider.isFirst! ? AppPage(
-      bottomSafeArea: false,
+      bottomSafeArea: true,
       isCurrentPageMain: true,
+      scaffoldKey: _scaffoldKey,
       padding: const EdgeInsets.fromLTRB(12, 16, 12, 0),
       floatingActionButton: StreamBuilder(
-        stream: widget.homePageBloC!.fabStateStream,
+        stream: _homePageBloC.fabStateStream,
         builder: (context, AsyncSnapshot<bool> snapshot) {
           return snapshot.hasData ? AnimatedSlide(
             duration: const Duration(milliseconds: 200),
@@ -41,165 +79,149 @@ class _HomePageState extends State<HomePage> {
               child: ExtendedFAB(
                 icon: Icons.add,
                 title: AppLocalizations.of(context, 'add'),
-                onPressed: () {
-                  provider.switchThemes();
+                onPressed: (){
+                  if(_homePageBloC.currentLocation == NestedRoutes.notesPath){
+                    context.push(AppRoutes.noteViewPath, {
+                      "type": "note",
+                      "db_bloc": _databaseBloc
+                    });
+                  }
                 },
               ),
             ),
           ) : const SizedBox();
         }
       ),
-      child: Center()/*CustomSliverBar(
-        topPadding: 48,
-        title: AppLocalizations.of(context, 'desc'),
-        collapsedTitle: App.appName,
-        trailing: IconButton(
-          icon: Icon(
-            Icons.downloading_rounded,
-            size: 32,
-            color: provider.theme.accentColor!,
-          ),
-          onPressed: () {
-            if(kDebugMode){
-              final provider = Provider.of<PreferenceProvider>(context, listen: false);
-              provider.deleteAllData();
+      drawer: StreamBuilder(
+        initialData: NestedRoutes.notesPath,
+        stream: _homePageBloC.selectedLocationStream,
+        builder: (context, AsyncSnapshot<String> snapshot) {
+          //debugPrint("DRAWER: ${snapshot.data}");
+          return AppDrawer(
+            bloc: _homePageBloC,
+            scaffoldKey: _scaffoldKey,
+            location: snapshot.data,
+            nestedDelegate: _nestedDelegate,
+            onTabChanged: (){
+              _searchController.clear();
+              _homePageBloC.searchQuery = "";
+            },
+          );
+        }
+      ),
+      child: Column(
+        children: [
+          if(kIsWeb)
+          const SizedBox(height: 8),
+          homeAppBar,
+          const SizedBox(height: 12),
+          StreamBuilder(
+            initialData: false,
+            stream: _homePageBloC.showSearchStream,
+            builder: (context, AsyncSnapshot<bool> snapshot) {
+              return AnimatedSwitcher(
+                duration: const Duration(milliseconds: 400),
+                reverseDuration: const Duration(milliseconds: 150),
+                child: snapshot.data! ? Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  child: StatefulBuilder(
+                    builder: (context, setItem) {
+                      _setSearchState = setItem;
+                      return InputField(
+                        isDatePick: false,
+                        controller: _searchController,
+                        hint: AppLocalizations.of(context, 'search_hint'),
+                        borderRadius: 16,
+                        prefixIcon: const Icon(
+                          Icons.search,
+                          size: 22,
+                          color: Colors.grey,
+                        ),
+                        suffixIcon: _searchController.text.isNotEmpty ? GestureDetector(
+                          child: const Icon(
+                            Icons.clear,
+                            color: Colors.grey,
+                          ),
+                          onTap: () async{
+                            _searchController.clear();
+                            _homePageBloC.searchQuery = "";
+                            FocusScope.of(context).unfocus();
+                            if(_homePageBloC.currentLocation == NestedRoutes.notesPath){
+                              await _databaseBloc.getNotes();
+                            }
+                          },
+                        ) : const SizedBox(),
+                        onChanged: (String value) async{
+                          _homePageBloC.searchQuery = value;
+                          _setSearchState!(() {});
+                          if(_homePageBloC.currentLocation == NestedRoutes.notesPath){
+                            await _databaseBloc.getNotes(value);
+                          }
+                        },
+                        inputType: TextInputType.text,
+                      );
+                    }
+                  ),
+                ) : const SizedBox(),
+              );
             }
-          },
-        ),
-        actions: IconButton(
-          icon: Icon(
-            !isIosApplication ?
-            Icons.settings :
-            CupertinoIcons.settings_solid,
-            size: isIosApplication ? 28 : 30,
-            color: provider.theme.accentColor!,
           ),
-          onPressed: () {
-            context.push(AppRoutes.settingsPath);
-          },
-        ),
-        onUserScroll: (notification){
-          final ScrollDirection direction = notification.direction;
-          if (direction == ScrollDirection.reverse) {
-            homePageBloC!.changeFabState(false);
-          } else if (direction == ScrollDirection.forward) {
-            homePageBloC!.changeFabState(true);
-          }
-          return true;
-        },
-        sliverHeader: InputField(
-          isDatePick: false,
-          controller: TextEditingController(),
-          hint: AppLocalizations.of(context, 'search_hint'),
-          borderRadius: 16,
-          prefixIcon: const Icon(
-            Icons.search,
-            size: 22,
-            color: Colors.grey,
+          const SizedBox(height: 8),
+          Expanded(
+            child: Router(
+              routerDelegate: _nestedDelegate,
+              routeInformationParser: _nestedParser,
+              backButtonDispatcher: _backButtonDispatcher,
+            ),
           ),
-          inputType: TextInputType.text,
-        ),
-        child: ListView.builder(
-          //shrinkWrap: true,
-          primary: true,
-          itemCount: listing.length,
-          physics: const NeverScrollableScrollPhysics(),
-          itemBuilder: (ctx, index){
-            return Container(
-              decoration: BoxDecoration(
-                color: secondaryColor(context),
-                borderRadius: BorderRadius.circular(12)
-              ),
-              margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 0),
-              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
-              child: Text(listing[index])
-            );
-          },
-        ),
-      )*/
+        ],
+      )
     ) : const OnBoardingPage();
   }
 
-  List<String> get listing => List.generate(
-    25, (index) => "NOTE ${index + 1}"
-  );
-}
-
-class HomePageView extends StatefulWidget {
-  final HomePageBloc bloc;
-
-  const HomePageView({
-    Key? key,
-    required this.bloc,
-  }) : super(key: key);
-
-  @override
-  State<HomePageView> createState() => _HomePageViewState();
-}
-
-class _HomePageViewState extends State<HomePageView> {
-  final _searchController = TextEditingController();
-
-  HomePageBloc get bloc => widget.bloc;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: Column(
-        children: [
-          const SizedBox(height: 8),
-          InputField(
-            isDatePick: false,
-            controller: _searchController,
-            hint: AppLocalizations.of(context, 'search_hint'),
-            borderRadius: 16,
-            prefixIcon: const Icon(
-              Icons.search,
-              size: 22,
-            ),
-            inputType: TextInputType.text,
-          ),
-          const SizedBox(height: 32),
-          Expanded(
-            child: ListView.builder(
-              //shrinkWrap: true,
-              primary: false,
-              itemCount: listing.length,
-              physics: const NeverScrollableScrollPhysics(),
-              itemBuilder: (ctx, index){
-                return Container(
-                  decoration: BoxDecoration(
-                    color: secondaryColor(context),
-                    borderRadius: BorderRadius.circular(12)
-                  ),
-                  margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 0),
-                  padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
-                  child: Text(listing[index])
-                );
-              },
-            ),/*Column(
-              children: listing.asMap().map((index, item){
-                return MapEntry(index, Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: secondaryColor(context),
-                    borderRadius: BorderRadius.circular(12)
-                  ),
-                  margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 0),
-                  padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
-                  child: Text(listing[index])
-                ));
-              }).values.toList(),
-            )*/
-          ),
-        ],
+  Widget get homeAppBar => Row(
+    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    children: [
+      IconButton(
+        icon: const Icon(
+          Icons.dehaze,
+          size: 28,
+        ),
+        onPressed: () {
+          _scaffoldKey.currentState?.openDrawer();
+        },
       ),
-    );
-  }
-
-  List<String> get listing => List.generate(
-    25, (index) => "NOTE ${index + 1}"
+      StreamBuilder(
+        initialData: NestedRoutes.notesPath,
+        stream: _homePageBloC.selectedLocationStream,
+        builder: (context, AsyncSnapshot<String> snapshot) {
+          return Text(
+            AppLocalizations.of(context, snapshot.data!.substring(1)),
+            style: const TextStyle(
+              fontSize: 26,
+              fontWeight: FontWeight.w400
+            ),
+          );
+        }
+      ),
+      StreamBuilder(
+        initialData: false,
+        stream: _homePageBloC.showSearchStream,
+        builder: (context, AsyncSnapshot<bool> snapshot) {
+          return IconButton(
+            icon: Icon(
+              snapshot.data! ?
+              Icons.clear :
+              Icons.search,
+              size: 28,
+            ),
+            onPressed: () {
+              _homePageBloC.changeSearchState(!snapshot.data!);
+            },
+          );
+        }
+      )
+    ],
   );
 
   @override

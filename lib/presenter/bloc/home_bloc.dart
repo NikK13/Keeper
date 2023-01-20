@@ -1,12 +1,18 @@
 import 'dart:async';
 import 'package:rxdart/rxdart.dart';
+import '../../data/navigator/routes.dart';
 import 'bloc.dart';
 
 class HomePageBloc extends BaseBloc{
+  late String searchQuery;
+  late String currentLocation;
+
   HomePageBloc(){
     changeFabState(true);
     changeSearchShow(false);
-    //changeSelectedLocation(NestedRoutes.notesPath);
+    changeSelectedLocation(NestedRoutes.notesPath);
+    currentLocation = NestedRoutes.notesPath;
+    searchQuery = "";
   }
 
   final _fabStateSubject = BehaviorSubject<bool>();
@@ -30,6 +36,7 @@ class HomePageBloc extends BaseBloc{
   }
 
   void changeCurrentLocation(String location) async{
+    currentLocation = location;
     await changeSelectedLocation(location);
   }
 

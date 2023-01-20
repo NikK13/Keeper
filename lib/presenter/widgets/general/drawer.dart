@@ -2,7 +2,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:keeper/data/navigator/nested/nested_delegate.dart';
 import 'package:keeper/data/navigator/routes.dart';
 import 'package:keeper/domain/utils/app.dart';
 import 'package:keeper/domain/utils/extensions.dart';
@@ -15,84 +15,102 @@ import 'package:provider/provider.dart';
 class AppDrawer extends StatelessWidget {
   final HomePageBloc? bloc;
   final String? location;
-  final GlobalKey<ScaffoldState>? scaffoldKey;
+  final Function? onTabChanged;
+  final NestedRouterDelegate? nestedDelegate;
+  final GlobalKey<ScaffoldState> scaffoldKey;
 
   const AppDrawer({
     Key? key,
     this.bloc,
     this.location,
-    this.scaffoldKey,
+    this.nestedDelegate,
+    this.onTabChanged,
+    required this.scaffoldKey,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     //debugPrint("DRAWER - $location");
-    return SizedBox(
-      width: MediaQuery.of(context).size.width * 0.625,
+    return WillPopScope(
+      onWillPop: () async{
+        if(defaultTargetPlatform == TargetPlatform.iOS ||
+          defaultTargetPlatform == TargetPlatform.android){
+          debugPrint("DRAWER_WillPopScope");
+          scaffoldKey.currentState?.closeDrawer();
+          return Future.value(false);
+        }
+        return Future.value(true);
+      },
       child: Drawer(
-        backgroundColor: drawerColor(context),
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              padding: EdgeInsets.zero,
-              margin: EdgeInsets.zero,
-              child: Padding(
-                padding: const EdgeInsets.only(left: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Image.asset(
-                      "assets/images/logo.png",
-                      width: 45, height: 45,
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      App.appName,
-                      style: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.w700
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () async{
-                        if(kDebugMode){
-                          final provider = Provider.of<PreferenceProvider>(context, listen: false);
-                          provider.deleteAllData();
-                        }
-                      },
-                      child: Text(
-                        AppLocalizations.of(context, 'desc'),
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey.shade600,
-                          fontWeight: FontWeight.w400
+        width: MediaQuery.of(context).size.width * 0.615,
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              DrawerHeader(
+                padding: EdgeInsets.zero,
+                margin: EdgeInsets.zero,
+                curve: Curves.slowMiddle,
+                duration: const Duration(milliseconds: 0),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Image.asset(
+                          "assets/images/logo.png",
+                          width: 45, height: 45,
                         ),
-                      ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          App.appName,
+                          style: TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.w700
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () async{
+                            if(kDebugMode){
+                              final provider = Provider.of<PreferenceProvider>(context, listen: false);
+                              provider.deleteAllData();
+                            }
+                          },
+                          child: Text(
+                            AppLocalizations.of(context, 'desc'),
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey.shade600,
+                              fontWeight: FontWeight.w400
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              )
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: drawerItems(context, location!)
-            ),
-            const Divider(),
-            DrawerItemView(
-              item: DrawerItem(
-                icon: CupertinoIcons.settings,
-                location: AppRoutes.settingsPath,
-                title: AppLocalizations.of(context, 'settings'),
-                onPressed: () async{
-                  /*final info = await PackageInfo.fromPlatform();
-                  context.push(AppRoutes.settingsPath, extra: {"info": info});*/
-                },
-              )
-            ),
-          ],
+                  ),
+                )
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: drawerItems(context, location!)
+              ),
+              const Divider(),
+              DrawerItemView(
+                item: DrawerItem(
+                  icon: CupertinoIcons.settings,
+                  location: AppRoutes.settingsPath,
+                  title: AppLocalizations.of(context, 'settings'),
+                  onPressed: () async{
+                    context.push(AppRoutes.settingsPath);
+                  },
+                )
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -127,7 +145,13 @@ class AppDrawer extends StatelessWidget {
       bloc: bloc,
       location: curLoc,
       scaffoldKey: scaffoldKey,
+      onTabChanged: onTabChanged,
       item: drawerItemsList(context)[index],
+      navigateTo: (){
+        if(curLoc != drawerItemsList(context)[index].location){
+          nestedDelegate!.nestedRouteConfig = drawerItemsList(context)[index].location;
+        }
+      },
     )
   );
 }
@@ -136,6 +160,8 @@ class DrawerItemView extends StatelessWidget {
   final DrawerItem item;
   final HomePageBloc? bloc;
   final String? location;
+  final Function? navigateTo;
+  final Function? onTabChanged;
   final GlobalKey<ScaffoldState>? scaffoldKey;
 
   const DrawerItemView({
@@ -143,6 +169,8 @@ class DrawerItemView extends StatelessWidget {
     this.bloc,
     this.location,
     this.scaffoldKey,
+    this.navigateTo,
+    this.onTabChanged,
     required this.item,
   }) : super(key: key);
 
@@ -151,23 +179,29 @@ class DrawerItemView extends StatelessWidget {
     final provider = Provider.of<PreferenceProvider>(context);
     return GestureDetector(
       onTap: item.onPressed != null ?
-      () => item.onPressed!() : () async{
+      () => item.onPressed!() : (){
         if(location != null){
-          Navigator.pop(context);
-          //scaffoldKey!.currentState!.closeDrawer();
-          //await Future.delayed(const Duration(milliseconds: 1));
+          scaffoldKey?.currentState?.closeDrawer();
           if(bloc != null){
             bloc!
-              ..changeFabState(true)
-              ..changeSearchState(false)
-              ..changeSelectedLocation(item.location);
+            ..changeFABState(true)
+            ..changeSearchState(false)
+            ..changeCurrentLocation(item.location);
           }
-          context.go(item.location);
+          if(onTabChanged != null) onTabChanged!();
+          if(navigateTo != null) navigateTo!();
         }
       },
       child: Container(
         margin: const EdgeInsets.all(6),
         padding: const EdgeInsets.all(8.0),
+        /*decoration: BoxDecoration(
+          color: location != null ?
+          location == item.location ?
+          provider.theme.accentColor!.withOpacity(0.2):
+          Colors.transparent : Colors.transparent,
+          borderRadius: BorderRadius.circular(16)
+        ),*/
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 4),
           child: Row(
@@ -185,8 +219,11 @@ class DrawerItemView extends StatelessWidget {
                 child: Text(
                   item.title,
                   style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 17,
+                    fontWeight: location != null ?
+                    location == item.location ?
+                    FontWeight.w700 : FontWeight.w400
+                    : FontWeight.w400,
                     color: location != null ?
                     location == item.location ?
                     provider.theme.accentColor:

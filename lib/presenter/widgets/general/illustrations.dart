@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../domain/utils/localization.dart';
 import '../../provider/provider.dart';
 
 class OnBoardIllustration extends StatelessWidget {
@@ -38,6 +39,65 @@ class OnBoardIllustration extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class EmptyIllustration extends StatelessWidget {
+  final IconData icon;
+
+  const EmptyIllustration({Key? key, required this.icon}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final provider = Provider.of<PreferenceProvider>(context);
+    return SizedBox(
+      width: double.infinity,
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 80),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Stack(
+              alignment: AlignmentDirectional.center,
+              children: [
+                ClipPath(
+                  clipper: ShapeClipper(),
+                  child: Container(
+                    width: MediaQuery.of(context).size.width * 0.6,
+                    height: MediaQuery.of(context).size.height * 0.26,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: provider.theme.accentColor!.withOpacity(0.15),
+                    ),
+                  ),
+                ),
+                Positioned.fill(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: FittedBox(
+                      child: Icon(
+                        icon,
+                        color: provider.theme.accentColor,
+                        size: 12,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              AppLocalizations.of(context, 'empty_now'),
+              style: const TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 18
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }

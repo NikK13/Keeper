@@ -19,7 +19,7 @@ class ExtendedFAB extends StatelessWidget {
   Widget build(BuildContext context) {
     final provider = Provider.of<PreferenceProvider>(context);
     return Padding(
-      padding: const EdgeInsets.only(right: 4, bottom: 8),
+      padding: const EdgeInsets.only(right: 4, bottom: 6),
       child: FloatingActionButton.extended(
         icon: Icon(
           icon,

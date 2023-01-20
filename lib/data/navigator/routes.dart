@@ -5,8 +5,8 @@ class AppRoutes{
   static const String errorName = "ErrorPage";
   static const String errorPath = "/error";
 
-  static const String onBoardName = "OnBoardPage";
-  static const String onBoardPath = "/onboard";
+  static const String noteViewName = "NoteViewPage";
+  static const String noteViewPath = "/note";
 
   static const String settingsName = "SettingsPage";
   static const String settingsPath = "/settings";

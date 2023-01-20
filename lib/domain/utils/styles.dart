@@ -73,6 +73,10 @@ ThemeData themeLight = ThemeData(
   ),
   pageTransitionsTheme: themeTransitions,
   fontFamily: appFont,
+  drawerTheme: const DrawerThemeData(
+    elevation: 0,
+    backgroundColor: colorDrawerLight
+  ),
   colorScheme: const ColorScheme.light().copyWith(secondary: Colors.white),
 );
 
@@ -88,6 +92,10 @@ ThemeData themeDark = ThemeData(
   brightness: Brightness.dark,
   fontFamily: appFont,
   pageTransitionsTheme: themeTransitions,
+  drawerTheme: const DrawerThemeData(
+    elevation: 0,
+    backgroundColor: colorDrawerDark
+  ),
   colorScheme: const ColorScheme.dark().copyWith(secondary: Colors.black),
 );
 

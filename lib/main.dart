@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:keeper/data/db/db/db.dart';
 import 'package:keeper/data/navigator/delegate.dart';
 import 'package:keeper/data/navigator/parser.dart';
 import 'package:provider/provider.dart';
@@ -11,6 +12,7 @@ import 'presenter/provider/provider.dart';
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   await AppLocalizations.loadLanguages();
+  await DatabaseProvider.initDatabase();
   runApp(
     MultiProvider(
       providers: [
@@ -24,6 +26,7 @@ void main() async{
 class Application extends StatelessWidget{
   final _routerParser = AppRouterParser();
   final _routerDelegate = AppRouterDelegate();
+  final _backDispatcher = RootBackButtonDispatcher();
 
   Application({super.key});
 
@@ -40,7 +43,8 @@ class Application extends StatelessWidget{
           themeMode: getThemeMode(prefsProvider.currentTheme ?? "system"),
           theme: themeLight, darkTheme: themeDark,
           routerDelegate: _routerDelegate,
-          routeInformationParser: _routerParser
+          routeInformationParser: _routerParser,
+          backButtonDispatcher: _backDispatcher,
         ) : const SizedBox();
       },
     );
