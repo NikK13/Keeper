@@ -1,5 +1,9 @@
+// ignore_for_file: use_build_context_synchronously
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:keeper/domain/utils/fields.dart';
+import 'package:keeper/domain/utils/localization.dart';
 
 import '../../presenter/widgets/general/ripple.dart';
 import '../utils/styles.dart';
@@ -37,107 +41,113 @@ class Note{
 
 class NoteItem extends StatelessWidget {
   final Note? note;
+  final Function? deleteItem;
 
-  const NoteItem({Key? key, this.note}) : super(key: key);
+  const NoteItem({Key? key, this.note, this.deleteItem}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Hero(
-      tag: note!,
-      child: Ripple(
-        onTap: (){
-          /*Navigator.push(
-            context,
-            PageRouteBuilder(
-              pageBuilder: (_, __, ___) => note!.category! == "default" ?
-              SimpleNoteScreen(note: note) : TasksNoteScreen(note: note),
-              transitionDuration: const Duration(milliseconds: 250),
+    return CupertinoContextMenu(
+      actions: [
+        CupertinoContextMenuAction(
+          onPressed: (){
+
+          },
+          trailingIcon: CupertinoIcons.share,
+          child: Text(
+            AppLocalizations.of(context, 'share'),
+            style: const TextStyle(
+              fontFamily: appFont,
+              fontSize: 18
             ),
-          );*/
-        },
-        onLongPress: (){
-          /*showModalBottomSheet(
-              shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(16),
-                      topRight: Radius.circular(16)
-                  )
-              ),
-              context: context,
-              constraints: getDialogConstraints(context),
-              isScrollControlled: false,
-              isDismissible: true,
-              builder: (context) => NotesMenuDialog(
-                note: note,
-              )
-          );*/
-        },
-        radius: 16,
-        child: Container(
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: Theme.of(context).brightness == Brightness.light ?
-              Colors.black : Colors.white,
-              width: 0.05
-            ),
-            color: secondaryColor(context),
-            borderRadius: BorderRadius.circular(16)
           ),
-          child: Padding(
-            padding: const EdgeInsets.only(
-              left: 16, right: 16,
-              top: 16, bottom: 8
+        ),
+        CupertinoContextMenuAction(
+          onPressed: () async{
+            Navigator.of(context, rootNavigator: true).pop();
+            await Future.delayed(const Duration(milliseconds: 400));
+            await deleteItem!();
+          },
+          isDestructiveAction: true,
+          trailingIcon: CupertinoIcons.delete,
+          child: Text(
+            AppLocalizations.of(context, 'delete'),
+            style: const TextStyle(
+              fontFamily: appFont,
+              fontSize: 18
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        note!.title!,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+      child: Material(
+        type: MaterialType.transparency,
+        child: GestureDetector(
+          onTap: () {},
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: Colors.grey,
+                width: 0.075
+              ),
+              color: secondaryColor(context),
+              borderRadius: BorderRadius.circular(16)
+            ),
+            child: Padding(
+              padding: const EdgeInsets.only(
+                left: 16, right: 16,
+                top: 16, bottom: 8
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          note!.title!,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          textAlign: TextAlign.start,
+                          maxLines: 1,
                         ),
-                        textAlign: TextAlign.start,
-                        maxLines: 1,
                       ),
-                    ),
-                    /*Container(
-                    width: 16, height: 16,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: getColorByPriority(note!.priority!)
-                    ),
-                  )*/
-                  ],
-                ),
-                const SizedBox(height: 8),
-                //if(note!.category! == "default")
-                Expanded(
-                  child: Text(
-                    note!.body!,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey
-                    ),
-                    textAlign: TextAlign.start,
+                      /*Container(
+                      width: 16, height: 16,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: getColorByPriority(note!.priority!)
+                      ),
+                    )*/
+                    ],
                   ),
-                ),
-                /*if(note!.category! == "tasks")
-                Expanded(
-                  child: ListView(
-                    physics: const NeverScrollableScrollPhysics(),
-                    children: note!.items!.asMap().map((index, value){
-                      final item = note!.items![index];
-                      return MapEntry(index, getTaskView(item));
-                    }).values.toList(),
-                  )
-                ),*/
-              ],
-            )
+                  const SizedBox(height: 8),
+                  //if(note!.category! == "default")
+                  Expanded(
+                    child: Text(
+                      note!.body!,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey
+                      ),
+                      textAlign: TextAlign.start,
+                    ),
+                  ),
+                  /*if(note!.category! == "tasks")
+                  Expanded(
+                    child: ListView(
+                      physics: const NeverScrollableScrollPhysics(),
+                      children: note!.items!.asMap().map((index, value){
+                        final item = note!.items![index];
+                        return MapEntry(index, getTaskView(item));
+                      }).values.toList(),
+                    )
+                  ),*/
+                ],
+              )
+            ),
           ),
         ),
       ),

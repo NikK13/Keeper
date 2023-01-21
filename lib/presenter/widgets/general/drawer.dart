@@ -42,7 +42,7 @@ class AppDrawer extends StatelessWidget {
         return Future.value(true);
       },
       child: Drawer(
-        width: MediaQuery.of(context).size.width * 0.615,
+        width: MediaQuery.of(context).size.width * 0.62,
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -51,7 +51,9 @@ class AppDrawer extends StatelessWidget {
                 padding: EdgeInsets.zero,
                 margin: EdgeInsets.zero,
                 curve: Curves.slowMiddle,
-                duration: const Duration(milliseconds: 0),
+                duration: const Duration(
+                  milliseconds: 0
+                ),
                 child: SizedBox(
                   width: double.infinity,
                   child: Padding(
@@ -219,15 +221,16 @@ class DrawerItemView extends StatelessWidget {
                 child: Text(
                   item.title,
                   style: TextStyle(
-                    fontSize: 17,
+                    fontSize: 16,
                     fontWeight: location != null ?
                     location == item.location ?
-                    FontWeight.w700 : FontWeight.w400
-                    : FontWeight.w400,
+                    FontWeight.w700 : FontWeight.w500
+                    : FontWeight.w500,
                     color: location != null ?
                     location == item.location ?
                     provider.theme.accentColor:
                     accent(context) : accent(context),
+                    //letterSpacing: 0.65
                   ),
                 ),
               )

@@ -67,7 +67,12 @@ class NotesFragmentView extends StatelessWidget {
           crossAxisCount: 2, itemCount: notesList!.length,
           itemBuilder: (BuildContext context, int index) {
             final item = notesList![index];
-            return NoteItem(note: item);
+            return NoteItem(
+              note: item,
+              deleteItem: () async{
+                await dbBloc!.deleteNote(item.id!);
+              },
+            );
           },
           staggeredTileBuilder: (int index) => StaggeredTile.count(
             1, (index) % 2 == 0 ? 1.3 : 1

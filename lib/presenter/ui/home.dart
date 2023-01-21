@@ -121,44 +121,49 @@ class _HomePageState extends State<HomePage> {
             builder: (context, AsyncSnapshot<bool> snapshot) {
               return AnimatedSwitcher(
                 duration: const Duration(milliseconds: 400),
-                reverseDuration: const Duration(milliseconds: 150),
+                reverseDuration: const Duration(milliseconds: 200),
                 child: snapshot.data! ? Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 6),
                   child: StatefulBuilder(
                     builder: (context, setItem) {
                       _setSearchState = setItem;
-                      return InputField(
-                        isDatePick: false,
-                        controller: _searchController,
-                        hint: AppLocalizations.of(context, 'search_hint'),
-                        borderRadius: 16,
-                        prefixIcon: const Icon(
-                          Icons.search,
-                          size: 22,
-                          color: Colors.grey,
-                        ),
-                        suffixIcon: _searchController.text.isNotEmpty ? GestureDetector(
-                          child: const Icon(
-                            Icons.clear,
-                            color: Colors.grey,
+                      return Column(
+                        children: [
+                          InputField(
+                            isDatePick: false,
+                            controller: _searchController,
+                            hint: AppLocalizations.of(context, 'search_hint'),
+                            borderRadius: 16,
+                            prefixIcon: const Icon(
+                              Icons.search,
+                              size: 22,
+                              color: Colors.grey,
+                            ),
+                            suffixIcon: _searchController.text.isNotEmpty ? GestureDetector(
+                              child: const Icon(
+                                Icons.clear,
+                                color: Colors.grey,
+                              ),
+                              onTap: () async{
+                                _searchController.clear();
+                                _homePageBloC.searchQuery = "";
+                                FocusScope.of(context).unfocus();
+                                if(_homePageBloC.currentLocation == NestedRoutes.notesPath){
+                                  await _databaseBloc.getNotes();
+                                }
+                              },
+                            ) : const SizedBox(),
+                            onChanged: (String value) async{
+                              _homePageBloC.searchQuery = value;
+                              _setSearchState!(() {});
+                              if(_homePageBloC.currentLocation == NestedRoutes.notesPath){
+                                await _databaseBloc.getNotes(value);
+                              }
+                            },
+                            inputType: TextInputType.text,
                           ),
-                          onTap: () async{
-                            _searchController.clear();
-                            _homePageBloC.searchQuery = "";
-                            FocusScope.of(context).unfocus();
-                            if(_homePageBloC.currentLocation == NestedRoutes.notesPath){
-                              await _databaseBloc.getNotes();
-                            }
-                          },
-                        ) : const SizedBox(),
-                        onChanged: (String value) async{
-                          _homePageBloC.searchQuery = value;
-                          _setSearchState!(() {});
-                          if(_homePageBloC.currentLocation == NestedRoutes.notesPath){
-                            await _databaseBloc.getNotes(value);
-                          }
-                        },
-                        inputType: TextInputType.text,
+                          const SizedBox(height: 8)
+                        ],
                       );
                     }
                   ),
@@ -179,49 +184,52 @@ class _HomePageState extends State<HomePage> {
     ) : const OnBoardingPage();
   }
 
-  Widget get homeAppBar => Row(
-    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-    children: [
-      IconButton(
-        icon: const Icon(
-          Icons.dehaze,
-          size: 28,
+  Widget get homeAppBar => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 2),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        IconButton(
+          icon: const Icon(
+            Icons.dehaze,
+            size: 28,
+          ),
+          onPressed: () {
+            _scaffoldKey.currentState?.openDrawer();
+          },
         ),
-        onPressed: () {
-          _scaffoldKey.currentState?.openDrawer();
-        },
-      ),
-      StreamBuilder(
-        initialData: NestedRoutes.notesPath,
-        stream: _homePageBloC.selectedLocationStream,
-        builder: (context, AsyncSnapshot<String> snapshot) {
-          return Text(
-            AppLocalizations.of(context, snapshot.data!.substring(1)),
-            style: const TextStyle(
-              fontSize: 26,
-              fontWeight: FontWeight.w400
-            ),
-          );
-        }
-      ),
-      StreamBuilder(
-        initialData: false,
-        stream: _homePageBloC.showSearchStream,
-        builder: (context, AsyncSnapshot<bool> snapshot) {
-          return IconButton(
-            icon: Icon(
-              snapshot.data! ?
-              Icons.clear :
-              Icons.search,
-              size: 28,
-            ),
-            onPressed: () {
-              _homePageBloC.changeSearchState(!snapshot.data!);
-            },
-          );
-        }
-      )
-    ],
+        StreamBuilder(
+          initialData: NestedRoutes.notesPath,
+          stream: _homePageBloC.selectedLocationStream,
+          builder: (context, AsyncSnapshot<String> snapshot) {
+            return Text(
+              AppLocalizations.of(context, snapshot.data!.substring(1)),
+              style: const TextStyle(
+                fontSize: 26,
+                fontWeight: FontWeight.w400
+              ),
+            );
+          }
+        ),
+        StreamBuilder(
+          initialData: false,
+          stream: _homePageBloC.showSearchStream,
+          builder: (context, AsyncSnapshot<bool> snapshot) {
+            return IconButton(
+              icon: Icon(
+                snapshot.data! ?
+                Icons.clear :
+                Icons.search,
+                size: 28,
+              ),
+              onPressed: () {
+                _homePageBloC.changeSearchState(!snapshot.data!);
+              },
+            );
+          }
+        )
+      ],
+    ),
   );
 
   @override

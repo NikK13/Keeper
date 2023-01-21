@@ -49,7 +49,7 @@ class _NoteViewPageState extends State<NoteViewPage> {
     return GestureDetector(
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: AppPage(
-        padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+        padding: const EdgeInsets.fromLTRB(20, 22, 20, 0),
         child: Column(
           children: [
             Row(
@@ -63,7 +63,7 @@ class _NoteViewPageState extends State<NoteViewPage> {
                     isIosApplication ?
                     Icons.arrow_back_ios :
                     Icons.arrow_back,
-                    size: isIosApplication ? 28 : 32,
+                    size: isIosApplication ? 27 : 32,
                     color: accent(context),
                   ),
                 ),
