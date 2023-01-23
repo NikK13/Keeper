@@ -167,6 +167,45 @@ void showToastBar(context, text, [IconData icon = Icons.error_outline, bool isSu
   );
 }
 
+int getIndexByPriority(String priority){
+  switch(priority){
+    case 'low':
+      return 0;
+    case 'medium':
+      return 1;
+    case 'high':
+      return 2;
+    default:
+      return 0;
+  }
+}
+
+Color? getColorByPriority(String priority){
+  switch(priority){
+    case "low":
+      return Colors.greenAccent.shade700;
+    case "medium":
+      return Colors.amber;
+    case "high":
+      return Colors.red;
+    default:
+      return Colors.amber;
+  }
+}
+
+String getPriorityByIndex(int index){
+  switch(index){
+    case 0:
+      return 'low';
+    case 1:
+      return 'medium';
+    case 2:
+      return 'high';
+    default:
+      return 'low';
+  }
+}
+
 String formattedDate(bool is12h, String date){
   DateTime dateTime = DateFormat(dateFormat24h).parse(date).add(const Duration(hours: 1));
 

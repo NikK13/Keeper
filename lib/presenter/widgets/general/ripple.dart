@@ -7,6 +7,8 @@ class Ripple extends StatelessWidget {
   final double? radius;
   final double elevation;
   final Color? rippleColor;
+  final Border? border;
+  final bool withRipple;
 
   const Ripple({
     Key? key,
@@ -15,7 +17,9 @@ class Ripple extends StatelessWidget {
     this.onLongPress,
     this.elevation = 0,
     this.radius,
-    this.rippleColor
+    this.rippleColor,
+    this.border,
+    this.withRipple = true
   }) : super(key: key);
 
   @override
@@ -24,11 +28,19 @@ class Ripple extends StatelessWidget {
       borderRadius: BorderRadius.all(Radius.circular(radius!)),
       color: rippleColor ?? Colors.transparent,
       elevation: elevation,
-      child: InkWell(
-        borderRadius: BorderRadius.all(Radius.circular(radius!)),
-        onTap: onTap,
-        onLongPress: onLongPress,
-        child: child,
+      child: Ink(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.all(Radius.circular(radius!)),
+          border: border
+        ),
+        child: InkWell(
+          //splashFactory: NoSplash.splashFactory,
+          highlightColor: !withRipple ? Colors.transparent : null,
+          borderRadius: BorderRadius.all(Radius.circular(radius!)),
+          onTap: onTap,
+          onLongPress: onLongPress,
+          child: child,
+        ),
       ),
     );
   }

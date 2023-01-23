@@ -185,7 +185,7 @@ class SettingsPage extends StatelessWidget {
         const SizedBox(height: 16),
         GestureDetector(
           onTap: () {
-            if(counter < 4) {
+            if(counter < 9) {
               counter++;
             } else{
               Navigator.pop(context);

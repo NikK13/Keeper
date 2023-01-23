@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:keeper/data/navigator/config.dart';
+import 'package:keeper/data/navigator/navigator.dart';
 import 'package:keeper/data/navigator/routes.dart';
 import 'package:keeper/presenter/ui/home.dart';
 import 'package:keeper/presenter/ui/note_view_page.dart';
@@ -9,13 +10,13 @@ import 'package:keeper/presenter/ui/settings.dart';
 class AppRouterDelegate extends RouterDelegate<AppRouteConfig>
     with ChangeNotifier, PopNavigatorRouterDelegateMixin<AppRouteConfig>{
   @override
-  final GlobalKey<NavigatorState> navigatorKey;
+  GlobalKey<NavigatorState> get navigatorKey => AppNavigator.instance.globalNavigatorKey;
 
   final _navigatorStack = <Page>[];
 
   AppRouteConfig? _routeConfig;
 
-  AppRouterDelegate() : navigatorKey = GlobalKey<NavigatorState>(){
+  AppRouterDelegate(){
     debugPrint("AppRouterDelegate init..");
     _routeConfig = AppRouteConfig(location: AppRoutes.homePath);
     if(!kIsWeb){

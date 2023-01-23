@@ -12,6 +12,10 @@ const String dateFormat24h = "dd/MM/yyyy kk:mm";
 const String dateFormat12h = "dd/MM/yyyy hh:mma";
 const String dateFormat = "dd/MM/yyyy";
 
+const String notesType = "note";
+const String tasksType = "tasks";
+const String reminderType = "reminder";
+
 const String key24Hour = "24h";
 const String keyThemeMode = "mode";
 const String keyLanguage = "language";

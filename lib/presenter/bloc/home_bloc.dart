@@ -4,7 +4,6 @@ import '../../data/navigator/routes.dart';
 import 'bloc.dart';
 
 class HomePageBloc extends BaseBloc{
-  late String searchQuery;
   late String currentLocation;
 
   HomePageBloc(){
@@ -12,7 +11,6 @@ class HomePageBloc extends BaseBloc{
     changeSearchShow(false);
     changeSelectedLocation(NestedRoutes.notesPath);
     currentLocation = NestedRoutes.notesPath;
-    searchQuery = "";
   }
 
   final _fabStateSubject = BehaviorSubject<bool>();

@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:keeper/domain/model/note.dart';
 import 'package:keeper/presenter/bloc/db_bloc.dart';
 import 'package:keeper/presenter/bloc/home_bloc.dart';
 import 'package:keeper/presenter/widgets/general/illustrations.dart';
 import 'package:keeper/presenter/widgets/general/loading.dart';
-
-import '../../domain/utils/styles.dart';
 
 class NotesFragment extends StatelessWidget {
   final HomePageBloc? bloc;
@@ -29,7 +26,7 @@ class NotesFragment extends StatelessWidget {
               notesList: snapshot.data,
             );
           }
-          return const EmptyIllustration(icon: Icons.sticky_note_2_rounded);
+          return const AppIllustration(icon: Icons.sticky_note_2_rounded);
         }
         return const LoadingView();
       },
@@ -63,22 +60,30 @@ class NotesFragmentView extends StatelessWidget {
       },
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8),
-        child: StaggeredGridView.countBuilder(
+        child: GridView.builder(
+          itemCount: notesList!.length,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2, childAspectRatio: 0.85,
+            crossAxisSpacing: 12.0, mainAxisSpacing: 12.0,
+          ),
+          itemBuilder: (context, index) => NoteItem(
+            note: notesList![index],
+            dbBloc: dbBloc,
+          ),
+        )/*StaggeredGridView.countBuilder(
           crossAxisCount: 2, itemCount: notesList!.length,
           itemBuilder: (BuildContext context, int index) {
             final item = notesList![index];
             return NoteItem(
               note: item,
-              deleteItem: () async{
-                await dbBloc!.deleteNote(item.id!);
-              },
+              dbBloc: dbBloc,
             );
           },
           staggeredTileBuilder: (int index) => StaggeredTile.count(
             1, (index) % 2 == 0 ? 1.3 : 1
           ),
           crossAxisSpacing: 12.0, mainAxisSpacing: 12.0,
-        ),
+        )*/,
       ),
     );
   }

@@ -5,7 +5,6 @@ import 'package:intl/intl.dart';
 import 'package:keeper/data/navigator/nested/nested_delegate.dart';
 import 'package:keeper/data/navigator/nested/nested_parser.dart';
 import 'package:keeper/data/navigator/routes.dart';
-import 'package:keeper/domain/model/note.dart';
 import 'package:keeper/domain/utils/constants.dart';
 import 'package:keeper/domain/utils/extensions.dart';
 import 'package:keeper/presenter/bloc/db_bloc.dart';
@@ -48,6 +47,7 @@ class _HomePageState extends State<HomePage> {
     _nestedDelegate = NestedRouterDelegate(
       _homePageBloC, _databaseBloc
     );
+    debugPrint(DateFormat('HH:mm:ss').format(DateTime(2023, 1, 1, 24, 55, 40)));
     super.initState();
   }
 
@@ -82,7 +82,13 @@ class _HomePageState extends State<HomePage> {
                 onPressed: (){
                   if(_homePageBloC.currentLocation == NestedRoutes.notesPath){
                     context.push(AppRoutes.noteViewPath, {
-                      "type": "note",
+                      "type": notesType,
+                      "db_bloc": _databaseBloc
+                    });
+                  }
+                  else if(_homePageBloC.currentLocation == NestedRoutes.tasksPath){
+                    context.push(AppRoutes.noteViewPath, {
+                      "type": tasksType,
                       "db_bloc": _databaseBloc
                     });
                   }
@@ -104,7 +110,7 @@ class _HomePageState extends State<HomePage> {
             nestedDelegate: _nestedDelegate,
             onTabChanged: (){
               _searchController.clear();
-              _homePageBloC.searchQuery = "";
+              _databaseBloc.searchQuery = "";
             },
           );
         }
@@ -146,19 +152,15 @@ class _HomePageState extends State<HomePage> {
                               ),
                               onTap: () async{
                                 _searchController.clear();
-                                _homePageBloC.searchQuery = "";
+                                _databaseBloc.searchQuery = "";
                                 FocusScope.of(context).unfocus();
-                                if(_homePageBloC.currentLocation == NestedRoutes.notesPath){
-                                  await _databaseBloc.getNotes();
-                                }
+                                await _inAppSearch();
                               },
                             ) : const SizedBox(),
                             onChanged: (String value) async{
-                              _homePageBloC.searchQuery = value;
+                              _databaseBloc.searchQuery = value;
                               _setSearchState!(() {});
-                              if(_homePageBloC.currentLocation == NestedRoutes.notesPath){
-                                await _databaseBloc.getNotes(value);
-                              }
+                              await _inAppSearch();
                             },
                             inputType: TextInputType.text,
                           ),
@@ -182,6 +184,17 @@ class _HomePageState extends State<HomePage> {
         ],
       )
     ) : const OnBoardingPage();
+  }
+
+  Future<void> _inAppSearch() async{
+    switch(_homePageBloC.currentLocation){
+      case NestedRoutes.notesPath:
+        await _databaseBloc.getNotes();
+        break;
+      case NestedRoutes.tasksPath:
+        await _databaseBloc.getTasks();
+        break;
+    }
   }
 
   Widget get homeAppBar => Padding(

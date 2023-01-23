@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:intl/intl.dart';
 import 'package:keeper/domain/model/note.dart';
+import 'package:keeper/domain/utils/styles.dart';
 import 'package:keeper/presenter/bloc/db_bloc.dart';
 import 'package:keeper/presenter/provider/provider.dart';
 import 'package:keeper/presenter/widgets/general/app_page.dart';
+import 'package:keeper/presenter/widgets/general/checkbox.dart';
+import 'package:keeper/presenter/widgets/general/dialogs.dart';
 import 'package:provider/provider.dart';
 
 import '../../domain/utils/constants.dart';
 import '../../domain/utils/extensions.dart';
 import '../../domain/utils/localization.dart';
+import '../dialog/new_item_dialog.dart';
+import '../widgets/general/chips.dart';
 
 class NoteViewPage extends StatefulWidget {
   final Map<String, dynamic>? extras;
@@ -27,20 +31,50 @@ class _NoteViewPageState extends State<NoteViewPage> {
   late String _type;
   late DatabaseBloc _bloc;
 
-  String? _locale;
   Note? _note;
+
+  int _selectedIndex = 0;
+
+  void Function(void Function())? _setIndexState, _setItemsState;
+
+  final List<Item> _items = [];
 
   @override
   void initState() {
-    _type = widget.extras?['type'] ?? "";
+    _type = widget.extras?['type'] ?? notesType;
     _note = widget.extras?['note'];
     _bloc = widget.extras?['db_bloc'];
-    debugPrint("$_type, NOTE: $_note");
-    SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
-      _locale ??= Localizations.localeOf(context).languageCode.contains("ru") ?
-      "kk:mm" : "hh:mm a";
-    });
+    _titleController.text = (_note != null ? _note!.title! : "");
+    if(_note != null){
+      _selectedIndex = getIndexByPriority(_note!.priority!);
+      switch(_type){
+        case notesType:
+          _descController.text = (_note != null ? _note!.body! : "");
+          break;
+        case tasksType:
+          _items.addAll(_note!.items!);
+          break;
+      }
+    }
     super.initState();
+  }
+
+  void changeActiveState(Item item){
+    _setItemsState!(() => item.isDone = !item.isDone!);
+  }
+
+  void deleteItemFromList(int index){
+    _setItemsState!(() => _items.removeAt(index));
+  }
+
+  void createNewItemInList(String title, [String? desc]){
+    _setItemsState!((){
+      _items.add(Item(
+        title: title,
+        desc: desc ?? "",
+        isDone: false
+      ));
+    });
   }
 
   @override
@@ -63,7 +97,7 @@ class _NoteViewPageState extends State<NoteViewPage> {
                     isIosApplication ?
                     Icons.arrow_back_ios :
                     Icons.arrow_back,
-                    size: isIosApplication ? 27 : 32,
+                    size: isIosApplication ? 26 : 32,
                     color: accent(context),
                   ),
                 ),
@@ -76,7 +110,22 @@ class _NoteViewPageState extends State<NoteViewPage> {
                 ),
                 GestureDetector(
                   onTap: () async{
-                    await _createNote(context);
+                    if(_type == notesType){
+                      if(_note != null){
+                        await _updateNote(context);
+                      }
+                      else{
+                        await _createNote(context);
+                      }
+                    }
+                    else if(_type == tasksType){
+                      if(_note != null){
+                        await _updateTasks(context);
+                      }
+                      else{
+                        await _createTasks(context);
+                      }
+                    }
                   },
                   child: Icon(
                     Icons.check,
@@ -92,13 +141,13 @@ class _NoteViewPageState extends State<NoteViewPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    /*Column(
+                    Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Padding(
                           padding: const EdgeInsets.only(top: 16),
                           child: Text(
-                            "PRIORITY",
+                            AppLocalizations.of(context, 'priority'),
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w700
@@ -125,29 +174,32 @@ class _NoteViewPageState extends State<NoteViewPage> {
                           },
                         ),
                       ],
-                    ),*/
+                    ),
                     if(_note != null)
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        const SizedBox(height: 6),
                         Text(
                           DateFormat(
-                            'dd MMMM, yyyy, $_locale',
+                            'dd MMMM, yyyy, ${provider.is24HourFormat! ?
+                            "HH:mm" : "hh:mm a"}',
                             Localizations.localeOf(context).toLanguageTag()
-                          ).format(DateTime.fromMillisecondsSinceEpoch(_note!.created!.toInt())),
+                          ).format(DateTime.fromMillisecondsSinceEpoch(_note!.updated!.toInt())),
                           style: const TextStyle(
-                            fontSize: 13
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500
                           ),
                         ),
-                        const SizedBox(height: 24),
                       ],
                     ),
+                    const SizedBox(height: 16),
                     TextField(
                       controller: _titleController,
                       cursorColor: provider.theme.accentColor,
                       style: const TextStyle(
                         fontWeight: FontWeight.w600,
-                        fontSize: 22
+                        fontSize: 24
                       ),
                       keyboardType: TextInputType.name,
                       textInputAction: TextInputAction.done,
@@ -157,12 +209,13 @@ class _NoteViewPageState extends State<NoteViewPage> {
                         hintStyle: const TextStyle(
                           fontWeight: FontWeight.w400,
                           color: Colors.grey,
-                          fontSize: 22
+                          fontSize: 24
                         ),
                         border: InputBorder.none,
                       ),
                     ),
                     const SizedBox(height: 22),
+                    if(_type == notesType)
                     TextField(
                       controller: _descController,
                       cursorColor: provider.theme.accentColor,
@@ -170,7 +223,7 @@ class _NoteViewPageState extends State<NoteViewPage> {
                       maxLines: 10,
                       style: const TextStyle(
                         fontWeight: FontWeight.w400,
-                        fontSize: 16
+                        fontSize: 17
                       ),
                       keyboardType: TextInputType.multiline,
                       textInputAction: TextInputAction.newline,
@@ -185,6 +238,53 @@ class _NoteViewPageState extends State<NoteViewPage> {
                         border: InputBorder.none,
                       ),
                     ),
+                    if(_type == tasksType)
+                    Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              AppLocalizations.of(context, 'tasks'),
+                              style: const TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w700
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: (){
+                                showContentDialog(context, NewItemDialog(
+                                  addNewItem: createNewItemInList,
+                                ));
+                              },
+                              child: Icon(
+                                Icons.add,
+                                size: 30,
+                                color: accent(context),
+                              ),
+                            )
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        StatefulBuilder(
+                          builder: (_, setItem){
+                            _setItemsState = setItem;
+                            return ListView.builder(
+                              shrinkWrap: true,
+                              itemCount: _items.length,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemBuilder: (context, index){
+                                return TaskItem(
+                                  task: _items[index],
+                                  changeActive: () => changeActiveState(_items[index]),
+                                  removeItem: () => deleteItemFromList(index),
+                                );
+                              },
+                            );
+                          },
+                        ),
+                      ],
+                    )
                   ],
                 ),
               ),
@@ -195,27 +295,22 @@ class _NoteViewPageState extends State<NoteViewPage> {
     );
   }
 
-  /*Future _updateNote() async{
+  Future _updateNote(BuildContext context) async{
     final title = _titleController.text.trim();
     final desc = _descController.text.trim();
     if(title.isNotEmpty && desc.isNotEmpty){
-      await _bloc.addNote(Note(
-
+      context.pop();
+      await _bloc.updateNote(Note(
+        id: _note!.id,
+        title: title,
+        body: desc,
+        created: _note!.created,
+        category: _note!.category,
+        updated: DateTime.now().millisecondsSinceEpoch,
+        priority: getPriorityByIndex(_selectedIndex),
       ));
-      *//*await notesBloc.updateItem(
-          Note(
-            id: note.id,
-            title: title,
-            desc: desc,
-            date: DateTime.now().millisecondsSinceEpoch,
-            category: note.category,
-            priority: getPriorityByIndex(_selectedIndex),
-            image: note.image,
-            items: note.items,
-          )
-      );*//*
     }
-  }*/
+  }
 
   Future _createNote(BuildContext context) async{
     final title = _titleController.text.trim();
@@ -225,8 +320,41 @@ class _NoteViewPageState extends State<NoteViewPage> {
       await _bloc.addNote(Note(
         title: title,
         body: desc,
+        category: _type,
         created: DateTime.now().millisecondsSinceEpoch,
         updated: DateTime.now().millisecondsSinceEpoch,
+        priority: getPriorityByIndex(_selectedIndex),
+      ));
+    }
+  }
+
+  Future _createTasks(BuildContext context) async{
+    final title = _titleController.text.trim();
+    if(title.isNotEmpty){
+      context.pop();
+      await _bloc.addTasks(Note(
+        title: title,
+        category: _type,
+        created: DateTime.now().millisecondsSinceEpoch,
+        updated: DateTime.now().millisecondsSinceEpoch,
+        priority: getPriorityByIndex(_selectedIndex),
+        items: _items
+      ));
+    }
+  }
+
+  Future _updateTasks(BuildContext context) async{
+    final title = _titleController.text.trim();
+    if(title.isNotEmpty){
+      context.pop();
+      await _bloc.updateTasks(Note(
+        id: _note!.id,
+        title: title,
+        category: _note!.category,
+        created: _note!.created,
+        updated: DateTime.now().millisecondsSinceEpoch,
+        priority: getPriorityByIndex(_selectedIndex),
+        items: _items
       ));
     }
   }
@@ -236,5 +364,78 @@ class _NoteViewPageState extends State<NoteViewPage> {
     _titleController.dispose();
     _descController.dispose();
     super.dispose();
+  }
+}
+
+class TaskItem extends StatelessWidget {
+  final Item? task;
+  final Function? changeActive;
+  final Function? removeItem;
+
+  const TaskItem({
+    Key? key,
+    this.task,
+    this.changeActive,
+    this.removeItem,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: Colors.grey,
+            width: 0.08
+          ),
+          color: secondaryColor(context)
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            children: [
+              AppCheckBox(
+                isSelected: task!.isDone,
+                onTap: () => changeActive!(),
+              ),
+              const SizedBox(width: 24),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      task!.title!,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    if(task!.desc!.trim().isNotEmpty)
+                    Text(
+                      task!.desc!,
+                      style: const TextStyle(
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 4),
+              IconButton(
+                icon: const Icon(
+                  Icons.delete_outline_rounded,
+                  size: 28,
+                  color: Colors.grey,
+                ),
+                onPressed: () => removeItem!()
+              ),
+              const SizedBox(width: 2),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

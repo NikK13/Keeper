@@ -44,10 +44,11 @@ class OnBoardIllustration extends StatelessWidget {
   }
 }
 
-class EmptyIllustration extends StatelessWidget {
+class AppIllustration extends StatelessWidget {
+  final String? title;
   final IconData icon;
 
-  const EmptyIllustration({Key? key, required this.icon}) : super(key: key);
+  const AppIllustration({Key? key, required this.icon, this.title}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -89,6 +90,7 @@ class EmptyIllustration extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
+              title ??
               AppLocalizations.of(context, 'empty_now'),
               style: const TextStyle(
                 fontWeight: FontWeight.w600,

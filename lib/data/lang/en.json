@@ -20,12 +20,14 @@
   "common": "Common",
   "connection_error": "No connection\nPlease, check your WI-FI or mobile network",
   "continue": "Continue",
+  "create": "Create",
   "current": "Current",
   "current_theme": "Theme mode",
   "date": "Date",
   "date_error": "Date must be after second date",
   "days": "Days",
   "desc": "Keep everything here",
+  "description": "Description",
   "details": "Details",
   "delete": "Delete",
   "delete_data_title": "Delete all data",
@@ -49,7 +51,9 @@
   "languages": "Available languages",
   "location": "Location",
   "menu": "Menu",
+  "new_item": "New item",
   "os_libraries": "Open-source libraries",
+  "priority": "Priority",
   "reminder": "Reminder",
   "reminder_datetime": "Exact date&time",
   "reminder_odometer": "Exact odometer",
@@ -65,11 +69,16 @@
   "theme_light": "Light",
   "theme_system": "System",
   "title": "Title",
+  "typehint": "Type something..",
   "update": "Update",
   "well": "Understood",
 
   "events": "Events",
   "notes": "Notes",
   "tasks": "Tasks",
-  "reminders": "Reminders"
+  "reminders": "Reminders",
+
+  "low": "Low",
+  "medium": "Medium",
+  "high": "High"
 }

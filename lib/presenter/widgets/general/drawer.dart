@@ -7,7 +7,6 @@ import 'package:keeper/data/navigator/routes.dart';
 import 'package:keeper/domain/utils/app.dart';
 import 'package:keeper/domain/utils/extensions.dart';
 import 'package:keeper/domain/utils/localization.dart';
-import 'package:keeper/domain/utils/styles.dart';
 import 'package:keeper/presenter/bloc/home_bloc.dart';
 import 'package:keeper/presenter/provider/provider.dart';
 import 'package:provider/provider.dart';
@@ -129,13 +128,13 @@ class AppDrawer extends StatelessWidget {
       location: NestedRoutes.tasksPath,
       title: AppLocalizations.of(context, 'tasks'),
     ),
-    DrawerItem(
+    /*DrawerItem(
       icon: Icons.event_note_outlined,
       location: NestedRoutes.eventsPath,
       title: AppLocalizations.of(context, 'events'),
-    ),
+    ),*/
     DrawerItem(
-      icon: Icons.notifications_on_outlined,
+      icon: Icons.event_note_outlined,
       location: NestedRoutes.remindersPath,
       title: AppLocalizations.of(context, 'reminders'),
     ),

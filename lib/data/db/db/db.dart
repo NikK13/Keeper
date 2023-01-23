@@ -1,8 +1,9 @@
 // ignore_for_file: depend_on_referenced_packages
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:isar/isar.dart';
 import 'package:keeper/data/db/db/entities/note.dart';
+import 'package:keeper/data/db/db/entities/reminder.dart';
+import 'package:keeper/data/db/db/entities/task.dart';
 import 'package:path_provider/path_provider.dart';
 
 class DatabaseProvider{
@@ -80,6 +81,7 @@ class DatabaseProvider{
   }*/
 
   static List<CollectionSchema<dynamic>> get _schemas => [
-    NoteEntitySchema
+    NoteEntitySchema, TaskEntitySchema,
+    ReminderEntitySchema
   ];
 }

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:keeper/data/navigator/config.dart';
 import 'package:keeper/data/navigator/routes.dart';
 import 'package:keeper/presenter/bloc/db_bloc.dart';
-import 'package:keeper/presenter/fragment/events.dart';
 import 'package:keeper/presenter/fragment/notes.dart';
 import 'package:keeper/presenter/fragment/reminders.dart';
 import 'package:keeper/presenter/fragment/tasks.dart';
@@ -47,6 +46,9 @@ class NestedRouterDelegate extends RouterDelegate<AppRouteConfig> with ChangeNot
       case NestedRoutes.notesPath:
         await _databaseBloc.getNotes();
         break;
+      case NestedRoutes.tasksPath:
+        await _databaseBloc.getTasks();
+        break;
     }
   }
 
@@ -54,7 +56,6 @@ class NestedRouterDelegate extends RouterDelegate<AppRouteConfig> with ChangeNot
 
   @override
   Future<void> setNewRoutePath(AppRouteConfig configuration) async{
-    //debugPrint("NESTED_setNewRoutePath: ${configuration.location}");
     _routeConfig = configuration;
   }
 
@@ -69,9 +70,10 @@ class NestedRouterDelegate extends RouterDelegate<AppRouteConfig> with ChangeNot
           dbBloc: _databaseBloc,
         );
       case NestedRoutes.tasksPath:
-        return const TasksFragment();
-      case NestedRoutes.eventsPath:
-        return const EventsFragment();
+        return TasksFragment(
+          bloc: _homePageBloc,
+          dbBloc: _databaseBloc,
+        );
       case NestedRoutes.remindersPath:
         return const RemindersFragment();
       default:
