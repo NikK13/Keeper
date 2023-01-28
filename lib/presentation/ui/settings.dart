@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:keeper/presenter/widgets/general/loading.dart';
+import 'package:keeper/presenter/widgets/platform/platform_switch.dart';
 import 'package:provider/provider.dart';
 
 import '../../data/api/repository.dart';
@@ -20,12 +21,10 @@ import '../widgets/general/app_page.dart';
 import '../widgets/general/dialog.dart';
 import '../widgets/general/dialogs.dart';
 import '../widgets/general/settings_ui.dart';
-import '../widgets/general/switch.dart';
 import '../widgets/platform/platform_appbar.dart';
 import '../widgets/platform/platform_button.dart';
 
 class SettingsPage extends StatelessWidget {
-
   const SettingsPage({
     Key? key,
   }) : super(key: key);
@@ -67,9 +66,9 @@ class SettingsPage extends StatelessWidget {
                   title: AppLocalizations.of(context, 'hours24format'),
                   onTap: () => changeHourFormat(provider),
                   icon: CupertinoIcons.clock,
-                  switchData: CustomSwitch(
+                  switchData: PlatformSwitch(
                     value: provider.is24HourFormat!,
-                    enableColor: provider.theme.accentColor,
+                    enabledColor: provider.theme.accentColor,
                     onChanged: (val) => changeHourFormat(provider)
                   ),
                   isFirst: false,
@@ -394,10 +393,10 @@ class SettingsPage extends StatelessWidget {
                   margin: const EdgeInsets.symmetric(
                     vertical: 4
                   ),
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.grey.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12)
+                    color: secondaryColor(context),
+                    borderRadius: BorderRadius.circular(16)
                   ),
                   child: Padding(
                     padding: const EdgeInsets.only(left: 8),
@@ -406,8 +405,7 @@ class SettingsPage extends StatelessWidget {
                         item.title,
                         style: TextStyle(
                           fontSize: 18,
-                          color: Theme.of(context).brightness == Brightness.light ?
-                          Colors.black : Colors.white,
+                          color: accent(context),
                           fontWeight: FontWeight.w700
                         ),
                       ),

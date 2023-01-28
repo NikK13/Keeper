@@ -10,6 +10,7 @@ import '../../../domain/utils/styles.dart';
 
 showContentDialog(context, child, [isOnMain = false, double size = 0.95]){
   showModalBottomSheet(
+    elevation: 0,
     backgroundColor: Colors.transparent,
     constraints: getDialogConstraints(context, size),
     context: context,

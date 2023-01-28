@@ -90,7 +90,8 @@ class NoteItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return isIosApplication ? CupertinoContextMenu(
+    return isIosApplication ? CupertinoContextMenu.builder(
+      builder: (context, animation) => noteView(context),
       actions: [
         CupertinoContextMenuAction(
           onPressed: (){
@@ -129,7 +130,6 @@ class NoteItem extends StatelessWidget {
           ),
         ),
       ],
-      child: noteView(context)
     ) : noteView(context);
   }
 
@@ -144,11 +144,9 @@ class NoteItem extends StatelessWidget {
         }
       );
     },
-    onLongPress: (){
-      if(!isIosApplication){
-        debugPrint("LONG PRESS");
-      }
-    },
+    onLongPress: !isIosApplication ? (){
+      debugPrint("LONG PRESS");
+    } : null,
     rippleColor: secondaryColor(context),
     border: Border.all(
       color: Colors.grey,
@@ -166,8 +164,8 @@ class NoteItem extends StatelessWidget {
           Text(
             note!.title!,
             style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
             ),
             textAlign: TextAlign.start,
             maxLines: 1,
@@ -178,8 +176,8 @@ class NoteItem extends StatelessWidget {
             child: Text(
               note!.body!,
               style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
                 color: Colors.grey
               ),
               textAlign: TextAlign.start,
@@ -187,8 +185,7 @@ class NoteItem extends StatelessWidget {
           ),
           if(note!.category! == tasksType)
           Expanded(
-            child: ListView(
-              physics: const NeverScrollableScrollPhysics(),
+            child: Column(
               children: note!.items!.asMap().map((index, value){
                 final item = note!.items![index];
                 return MapEntry(index, getTaskView(item));
@@ -251,7 +248,7 @@ class NoteItem extends StatelessWidget {
             size: 14,
           ),
           const SizedBox(width: 6),
-          Expanded(
+          Flexible(
             child: Text(
               item.title!,
               style: TextStyle(
@@ -263,6 +260,7 @@ class NoteItem extends StatelessWidget {
                 TextDecoration.none,
                 decorationStyle: TextDecorationStyle.solid
               ),
+              overflow: TextOverflow.ellipsis,
               maxLines: 1,
             ),
           )

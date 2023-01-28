@@ -69,13 +69,17 @@ ThemeData themeLight = ThemeData(
   ),
   useMaterial3: true,
   textTheme: const TextTheme(
-    button: textStyleBtnLight,
+    labelLarge: textStyleBtnLight,
   ),
   pageTransitionsTheme: themeTransitions,
   fontFamily: appFont,
   drawerTheme: const DrawerThemeData(
     elevation: 0,
     backgroundColor: colorDrawerLight
+  ),
+  dividerTheme: const DividerThemeData(
+    color: Colors.grey,
+    thickness: 0.25
   ),
   colorScheme: const ColorScheme.light().copyWith(secondary: Colors.white),
 );
@@ -86,7 +90,7 @@ ThemeData themeDark = ThemeData(
     color: Colors.black,
   ),
   textTheme: TextTheme(
-    button: textStyleBtnDark,
+    labelLarge: textStyleBtnDark
   ),
   useMaterial3: true,
   brightness: Brightness.dark,
@@ -95,6 +99,10 @@ ThemeData themeDark = ThemeData(
   drawerTheme: const DrawerThemeData(
     elevation: 0,
     backgroundColor: colorDrawerDark
+  ),
+  dividerTheme: const DividerThemeData(
+    color: Colors.grey,
+    thickness: 0.25
   ),
   colorScheme: const ColorScheme.dark().copyWith(secondary: Colors.black),
 );

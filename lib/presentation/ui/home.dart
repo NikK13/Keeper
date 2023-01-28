@@ -1,7 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:keeper/data/navigator/nested/nested_delegate.dart';
 import 'package:keeper/data/navigator/nested/nested_parser.dart';
 import 'package:keeper/data/navigator/routes.dart';
@@ -43,11 +42,10 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     _homePageBloC = HomePageBloc();
     _databaseBloc = DatabaseBloc();
-    _nestedParser = NestedRouterParser();
     _nestedDelegate = NestedRouterDelegate(
       _homePageBloC, _databaseBloc
     );
-    debugPrint(DateFormat('HH:mm:ss').format(DateTime(2023, 1, 1, 24, 55, 40)));
+    _nestedParser = NestedRouterParser();
     super.initState();
   }
 
@@ -203,9 +201,10 @@ class _HomePageState extends State<HomePage> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         IconButton(
-          icon: const Icon(
+          icon: Icon(
             Icons.dehaze,
             size: 28,
+            color: accent(context),
           ),
           onPressed: () {
             _scaffoldKey.currentState?.openDrawer();
@@ -233,7 +232,8 @@ class _HomePageState extends State<HomePage> {
                 snapshot.data! ?
                 Icons.clear :
                 Icons.search,
-                size: 28,
+                size: 29,
+                color: accent(context),
               ),
               onPressed: () {
                 _homePageBloC.changeSearchState(!snapshot.data!);

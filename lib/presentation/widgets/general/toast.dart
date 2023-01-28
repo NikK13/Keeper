@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class Toast {
   static void show(context, text, [IconData icon = Icons.error_outline, bool isSuccess = false]) {
-    OverlayState overlayState = Overlay.of(context)!;
+    OverlayState overlayState = Overlay.of(context);
     OverlayEntry overlayEntry = OverlayEntry(builder: (_) => const SizedBox.shrink());
 
     const Duration d = Duration(seconds: 1);

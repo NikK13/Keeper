@@ -92,14 +92,14 @@ class AppDrawer extends StatelessWidget {
                       ],
                     ),
                   ),
-                )
+                ),
               ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: drawerItems(context, location!)
               ),
-              const Divider(),
+              const Divider(thickness: 0.25),
               DrawerItemView(
                 item: DrawerItem(
                   icon: CupertinoIcons.settings,

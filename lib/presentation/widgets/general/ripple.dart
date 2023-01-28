@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 class Ripple extends StatelessWidget {
   final Widget? child;
   final GestureTapCallback? onTap;
+  final void Function(TapDownDetails)? onPanDown;
+  final GestureTapCallback? onPanCancel;
   final GestureTapCallback? onLongPress;
   final double? radius;
   final double elevation;
@@ -18,6 +20,8 @@ class Ripple extends StatelessWidget {
     this.elevation = 0,
     this.radius,
     this.rippleColor,
+    this.onPanDown,
+    this.onPanCancel,
     this.border,
     this.withRipple = true
   }) : super(key: key);

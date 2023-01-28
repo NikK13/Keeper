@@ -28,9 +28,10 @@ class ChipsList extends StatelessWidget {
         label: Text(
           options[i],
           style: TextStyle(
-            color: accent(context),
+            color: index != i ?
+            accent(context) : Colors.white,
             fontWeight: FontWeight.w500,
-            fontSize: 14
+            fontSize: 14,
           ),
         ),
         elevation: 2,

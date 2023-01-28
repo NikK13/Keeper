@@ -20,21 +20,22 @@ class AppCheckBox extends StatelessWidget {
   Widget build(BuildContext context) {
     final provider = Provider.of<PreferenceProvider>(context);
     return Ripple(
-      radius: 30,
+      radius: 14,
       onTap: onTap,
       child: Container(
         width: size,
         height: size,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(50),
+          borderRadius: BorderRadius.circular(14),
           color: isSelected! ?
           provider.theme.accentColor :
-          Colors.grey.shade300
+          Theme.of(context).brightness == Brightness.light ?
+          Colors.grey.shade300 : Colors.grey.shade800
         ),
         child: isSelected! ? Icon(
           Icons.check,
           color: Colors.white,
-          size: size / 1.45,
+          size: size / 1.35,
         ) : const SizedBox(),
       ),
     );
